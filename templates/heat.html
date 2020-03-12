@@ -5,30 +5,55 @@
 		<h4>现在是北京时间</h4>
 		<h4><span class="badge badge-pill badge-primary">{{ message }}</span></h4>
 	</div>
-	<form method=post enctype=multipart/form-data>
-		<div class="form-group alert alert-warning">
-			<label>选择测温照片<b>【图片要添加文字标注】</b></label>
-			<input class="btn btn-outline-warning btn-block" id="file" type="file" name="photo">
-		</div>
-		<div class="alert">
-		<div class="form-group">
-			<label for="username">姓名</label>
-			<input class="form-control form-control-lg" id="username" name="username" type="text" placeholder="请输入姓名" required maxlength="3">
-		</div>
-		<div class="form-group">
-			<label for="temperature">体温</label>
-			<input class="form-control form-control-lg" id="temperature" name="temperature" type="number" step="0.01" min="34.5" max="42" placeholder="请输入体温" required>
-		</div>
-		<label>测温时间：</label>
-		<div class="form-group form-check form-check-inline">
-			<input class="form-check-input" type="radio" name="time" id="am" value="am">
-			<label class="form-check-label" for="am">上午</label>
-		</div>
-		<div class="form-group form-check form-check-inline">
-			<input class="form-check-input" type="radio" name="time" id="pm" value="pm">
-			<label class="form-check-label" for="pm">下午</label>
-		</div>
-		</div>
-		<p><center><button class="btn btn-primary btn-lg" type="submit">上传</button></center></p>
-	</form>
-{% endblock %}
+	<div class="container">
+		<form method=post enctype=multipart/form-data>
+			<div class="form-group alert alert-warning">
+				<label>选择测温照片<b>【图片要添加文字标注】</b></label>
+				<input class="btn btn-outline-warning btn-block" id="file" type="file" name="photo" required>
+			</div>
+			<div class="form-group">
+				<label for="username">姓名</label>
+				<input class="form-control form-control-lg" id="username" name="username" type="text" placeholder="请输入姓名" required maxlength="3">
+			</div>
+			<div class="form-group">
+				<label for="temperature">体温</label>
+				<input class="form-control form-control-lg" id="temperature" name="temperature" type="number" step="0.01" min="34.5" max="42" placeholder="请输入体温" required>
+			</div>
+			<label>测温时间：</label>
+			<div class="form-group form-check form-check-inline">
+				<input class="form-check-input" type="radio" name="time" id="am" value="am">
+				<label class="form-check-label" for="am">上午</label>
+			</div>
+			<div class="form-group form-check form-check-inline">
+				<input class="form-check-input" type="radio" name="time" id="pm" value="pm">
+				<label class="form-check-label" for="pm">下午</label>
+			</div>
+			<!-- <p><center><button class="btn btn-primary btn-lg" type="submit">上传</button></center></p> -->
+			<p><center><button class="btn btn-primary btn-lg" type="button"  data-toggle="modal" data-target="#notice">提交</button></center></p>
+
+			<!-- Modal -->
+			<div class="modal fade" id="notice" tabindex="-1" role="dialog" data-backdrop="static" aria-labelledby="NoticeTitle" aria-hidden="true">
+			  <div class="modal-dialog" role="document">
+			    <div class="modal-content">
+			      <div class="modal-header">
+			        <h3 class="modal-title" id="NoticeTitle">请确认</h3>
+			        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+			          <span aria-hidden="true">&times;</span>
+			        </button>
+			      </div>
+			      <div class="modal-body">			        
+			        <p><b>1. 您的信息是否填写完整准确？<br>2. 您的上下午时间是否选择正确？<br>3. 您的照片添加文字标注了吗？</b></p>
+			        <p>如需修改，请点击【返回修改】按钮。<br>如无误，请点击【提交】按钮。</p>
+			      </div>
+			      <div class="modal-footer">
+			        <button type="button" class="btn btn-secondary" data-dismiss="modal">返回修改</button>
+			        <button type="submit" class="btn btn-primary">提交</button>
+			      </div>
+			    </div>
+			  </div>
+			</div>
+		</form>
+	</div>
+
+
+	{% endblock %}

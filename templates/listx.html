@@ -1,11 +1,20 @@
 {% extends "base.html" %}
 
 {% block body %}
-<h1>文件管理</h1>
-<a href="{{ url_for('list_file') }}">返回列表</a>
-<hr>
+<div class="container">
+	<h1>文件管理</h1>
+	<a href="{{ url_for('list_file') }}">返回列表</a>
+	<hr>
 
-{% for file in files_list %}
-    - <a href="{{ file_url + '/' + file }}">{{ file }}</a><br>
-{% endfor %}
+	{% for file in files_list %}
+		- <a href="{{ file_url + '/' + file }}">{{ file }}</a><br>
+	{% endfor %}
+
+
+	{% for url in url_list %}
+		- <a href="{{ url }}">{{ url }}</a><br>
+	{% endfor %}
+
+	{{message}}
+</div>
 {% endblock %}

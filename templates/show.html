@@ -3,12 +3,13 @@
 {% block body %}
 	<div class="alert alert-success progress-bar-striped text-center">
 		<p><h3>上报成功</h3></p>
+		<p>{{ username }}，您{{ cntime }}的体温是{{ temp }}℃</p>
 	</div>
 	<div>
 		<p><center><a class="btn btn-primary btn-lg" href="/">再次填报</a></center></p>
 	</div>
 	<div class="alert alert-success progress-bar-striped text-center">
-		<p>如果你能看到刚才上传的照片<br>就表明上报成功了,不用重复上报<br>？添加文字标注了吗？</p>
+		<p>如果你能看到刚才上传的照片<br>就表明上报成功了，不用重复上报<br>？添加文字标注了吗？</p>
 		<img src={{ message }} class="img-fluid">
 	</div>
 {% endblock %}
