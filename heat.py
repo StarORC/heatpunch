@@ -29,7 +29,6 @@ def upload_file():
         username = request.form['username']
         temperature = request.form['temperature']
         f_temperature = '%.2f' % float(temperature)
-        print(f_temperature)
         time = request.form['time']
         cntime = timedict[time]
 
@@ -87,26 +86,25 @@ def upload_file():
 def list_file():
     files_list = os.listdir(app.config['UPLOADED_PHOTOS_DEST'])
     file_url = '/listx'
-    print(files_list)
+    # print(files_list)
     return render_template('listx.html', files_list=files_list, file_url=file_url)
 
 @app.route('/listx/<path:path_name>')
 def open_file(path_name):
     abs_path = app.config['UPLOADED_PHOTOS_DEST'] + escape(path_name)
-    print('这是abs_path：' + str(abs_path))
+    # print('这是abs_path：' + str(abs_path))
     files_list = os.listdir(abs_path)
     url_list = []
     for file in files_list:
         file_path = abs_path + '/' + file
-        print('这是file_path：' + str(file_path))
+        # print('这是file_path：' + str(file_path))
         if os.path.isfile(file_path):
             file_url = photos.url(escape(path_name)) + '/' + file
         else:
             file_url = '/listx/' + escape(path_name) + '/' + file
-        print('这是file_url：' + str(file_url))
+        # print('这是file_url：' + str(file_url))
         url_list.append(file_url)
-    print('这是url_list：' + str(url_list))
-    # return render_template('listx.html', files_list=files_list, file_url=file_url, message='目录')
+    # print('这是url_list：' + str(url_list))
     return render_template('listx.html', url_list=url_list)
 
 if __name__ == '__main__':
