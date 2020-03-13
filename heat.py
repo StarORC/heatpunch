@@ -119,7 +119,7 @@ def open_file(path_name):
     for file in files_list:
         file_path = abs_path + '/' + file
         if os.path.isfile(file_path):
-             file_url = photos.path(file)
+            file_url = photos.url(escape(path_name)) + '/' + file
         else:
             file_url = '/listx/' + escape(path_name) + '/' + file
         url_list.append([file_url, file])
