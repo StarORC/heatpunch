@@ -7,7 +7,7 @@ import csv
 from flask import Flask, flash, request, render_template, escape
 from flask_uploads import UploadSet, configure_uploads, IMAGES, patch_request_class
 from datetime import datetime, timedelta, timezone
-
+from PIL import Image
 
 app = Flask(__name__)
 app.secret_key = b'_5#y2L"F4Q8z$T4&*]c]/'
@@ -21,6 +21,17 @@ timedict = {'am':'上午', 'pm':'下午'}
 
 def seekgps(filepath, targetcol, offset, data):
     pass
+
+def scale(old_file, new_path, size):
+    with Image.open(old_file) as im:
+        (ow, oh) = im.size
+        scale = size/max(ow, oh)
+        out = im.resize((int(ow*scale), int(oh*scale)))
+        if os.path.exists(new_path) == False:
+            os.makedirs(new_path)
+        new_file = new_path + '/' + os.path.split(im.filename)[1]
+        out.save(new_file)
+    return(new_file)
 
 @app.route('/', methods=['GET', 'POST'])
 def upload_file():
@@ -71,8 +82,13 @@ def upload_file():
                 # logcsv.seek(cellseek)
                 logcsv.write(f_temperature)
 
-        filename = photos.save(request.files['photo'], folder=subfolder, name=rename + '.')  
-        file_url = photos.url(filename)
+        photo_path = photos.save(request.files['photo'], folder=subfolder, name=rename + '.')
+        # 函数scale(old_file, new_path, size)压缩图片
+        old_file = app.config['UPLOADED_PHOTOS_DEST'] + photo_path
+        new_path = os.path.split(old_file)[0] + '/' + bjt_date + time
+        new_file = scale(old_file, new_path, 1024)
+
+        file_url = '_uploads/' + new_file
         return render_template('show.html', username=username, cntime=cntime, temp=temperature, message=file_url)
 
 
@@ -85,26 +101,28 @@ def upload_file():
 @app.route('/listx')
 def list_file():
     files_list = os.listdir(app.config['UPLOADED_PHOTOS_DEST'])
-    file_url = '/listx'
-    # print(files_list)
-    return render_template('listx.html', files_list=files_list, file_url=file_url)
+    url_list = []
+    for file in files_list:
+        file_path = app.config['UPLOADED_PHOTOS_DEST'] + '/' + file
+        if os.path.isfile(file_path):
+            file_url = photos.url('') + file
+        else:
+            file_url = '/listx/' + file
+        url_list.append([file_url, file])
+    return render_template('listx.html', url_list=url_list)
 
 @app.route('/listx/<path:path_name>')
 def open_file(path_name):
     abs_path = app.config['UPLOADED_PHOTOS_DEST'] + escape(path_name)
-    # print('这是abs_path：' + str(abs_path))
     files_list = os.listdir(abs_path)
     url_list = []
     for file in files_list:
         file_path = abs_path + '/' + file
-        # print('这是file_path：' + str(file_path))
         if os.path.isfile(file_path):
-            file_url = photos.url(escape(path_name)) + '/' + file
+             file_url = photos.path(file)
         else:
             file_url = '/listx/' + escape(path_name) + '/' + file
-        # print('这是file_url：' + str(file_url))
-        url_list.append(file_url)
-    # print('这是url_list：' + str(url_list))
+        url_list.append([file_url, file])
     return render_template('listx.html', url_list=url_list)
 
 if __name__ == '__main__':
