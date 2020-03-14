@@ -43,6 +43,8 @@ def upload_file():
         time = request.form['time']
         cntime = timedict[time]
 
+        user_info = [username, cntime, temperature]
+
         utc_t = datetime.utcnow().replace(tzinfo=timezone.utc)
         bjt = utc_t.astimezone(timezone(timedelta(hours=8)))
         bjt_date = bjt.strftime('%m%d')
@@ -52,12 +54,12 @@ def upload_file():
         rename = username + '+五部+' + bjt_date + cntime
         subfolder = bjt_date + '/' + bjt_date + time + '/'
         
-        listcsvpath = app.config['UPLOADED_PHOTOS_DEST'] + 'listcsv.csv'
+        listcsv_file = app.config['UPLOADED_PHOTOS_DEST'] + 'listcsv.csv'
         log_file = app.config['UPLOADED_PHOTOS_DEST'] + subfolder + bjt_date + time + '.csv'
 
         if os.path.exists(log_file) == False:
             os.makedirs(app.config['UPLOADED_PHOTOS_DEST'] + subfolder)
-            copyfile(listcsvpath, log_file)
+            copyfile(listcsv_file, log_file)
         with open(log_file, 'r+', encoding='utf-8-sig', newline='') as logcsv:
             usergps = logcsv.read().find(username)
             if usergps == -1:
@@ -86,17 +88,27 @@ def upload_file():
         # 函数scale(old_file, new_path, size)压缩图片
         old_file = app.config['UPLOADED_PHOTOS_DEST'] + photo_path
         new_path = os.path.split(old_file)[0] + '/' + bjt_date + time
-        new_file = scale(old_file, new_path, 1024)
+        if os.path.getsize(old_file) <= 4096:
+            status_message = ['danger', '照片上传失败', '照片被妖怪抓走啦', '再传一次吧']
+            return render_template('show.html', user_info=user_info, status_message=status_message)
+        elif os.path.getsize(old_file) < 51200:
+            if os.path.exists(new_path) == False:
+                os.makedirs(new_path)
+            new_file = new_path + '/' + os.path.split(old_file)[1]
+            copyfile(old_file, new_file)
+        else:
+            new_file = scale(old_file, new_path, 1024)
 
         file_url = '_uploads/' + new_file
-        return render_template('show.html', username=username, cntime=cntime, temp=temperature, message=file_url)
+        status_message = ['success', '上报成功', file_url, '']
+        return render_template('show.html', user_info=user_info, status_message=status_message)
 
 
     utc_t = datetime.utcnow().replace(tzinfo=timezone.utc)
     bjt = utc_t.astimezone(timezone(timedelta(hours=8)))
     bjt_date_y = bjt.strftime('%Y-%m-%d')
     bjt_time = bjt.strftime('%H:%M%p')
-    return render_template('heat.html', message=bjt_date_y + ' ' + bjt_time)
+    return render_template('heat.html', time_message=bjt_date_y + ' ' + bjt_time)
 
 @app.route('/listx')
 def list_file():
@@ -112,7 +124,7 @@ def list_file():
     return render_template('listx.html', url_list=url_list)
 
 @app.route('/listx/<path:path_name>')
-def open_file(path_name):
+def subpath_file(path_name):
     abs_path = app.config['UPLOADED_PHOTOS_DEST'] + escape(path_name)
     files_list = os.listdir(abs_path)
     url_list = []
@@ -124,6 +136,11 @@ def open_file(path_name):
             file_url = '/listx/' + escape(path_name) + '/' + file
         url_list.append([file_url, file])
     return render_template('listx.html', url_list=url_list)
+
+@app.route('/open/<filename>')
+def open_file():
+
+    return render_template('listx.html')
 
 if __name__ == '__main__':
     app.run()

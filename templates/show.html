@@ -1,15 +1,19 @@
 {% extends "base.html" %}
 
 {% block body %}
-	<div class="alert alert-success progress-bar-striped text-center">
-		<p><h3>上报成功</h3></p>
-		<p><b>{{ username }}</b>，您<b class="text-danger">{{ cntime }}</b>的体温是<b class="text-danger">{{ temp }}℃</b></p>
+	<div class="alert alert-success progress-bar-striped text-center align-middle">
+		<p><h3 class="text-{{ status_message[0] }}">{{ status_message[1] }}</h3></p>
+		<p><b>{{ user_info[0] }}</b>，您<b class="text-danger">{{ user_info[1] }}</b>的体温是<b class="text-danger">{{ user_info[2] }}℃</b></p>
 	</div>
 	<div>
 		<p><center><a class="btn btn-primary btn-lg" href="/">再次填报</a></center></p>
 	</div>
 	<div class="alert alert-success progress-bar-striped text-center">
-		<p>如果你能看到刚才上传的照片<br>就表明上报成功了，不用重复上报<br>？添加文字标注了吗？</p>
-		<img src={{ message }} class="img-fluid">
+		{% if status_message[0] == 'danger' %}
+			<p><p class="text-{{ status_message[0] }}"><b>{{ status_message[2] }}<br>{{ status_message[3] }}</b></p>
+		{% else %}
+			<p>如果你能看到刚才上传的照片<br>就表明上报成功了，不用重复上报<br>？添加文字标注了吗？</p>
+			<img src={{ status_message[2] }} class="img-fluid">
+		{% endif %}
 	</div>
 {% endblock %}
