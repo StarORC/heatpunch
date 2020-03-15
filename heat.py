@@ -37,13 +37,15 @@ def scale(old_file, new_path, size):
 def upload_file():
     if request.method == 'POST' and 'photo' in request.files:
 
+        request_files = request.files['photo']
         username = request.form['username']
         temperature = request.form['temperature']
         f_temperature = '%.2f' % float(temperature)
         time = request.form['time']
         cntime = timedict[time]
 
-        user_info = [username, cntime, temperature]
+        user_info = [username, cntime, temperature, request_files.filename.split('.')[1]]
+        print(user_info)
 
         utc_t = datetime.utcnow().replace(tzinfo=timezone.utc)
         bjt = utc_t.astimezone(timezone(timedelta(hours=8)))
@@ -84,24 +86,30 @@ def upload_file():
                 # logcsv.seek(cellseek)
                 logcsv.write(f_temperature)
 
-        photo_path = photos.save(request.files['photo'], folder=subfolder, name=rename + '.')
-        # 函数scale(old_file, new_path, size)压缩图片
-        old_file = app.config['UPLOADED_PHOTOS_DEST'] + photo_path
-        new_path = os.path.split(old_file)[0] + '/' + bjt_date + time
-        if os.path.getsize(old_file) <= 4096:
-            status_message = ['danger', '照片上传失败', '照片被妖怪抓走啦', '再传一次吧']
+        try:
+            photo_path = photos.save(request_files, folder=subfolder, name=rename + '.')
+        except:
+            # print(error)
+            status_message = ['danger', '照片格式错误', '再传一次吧', '告诉我，您用什么软件编辑了照片？']
             return render_template('show.html', user_info=user_info, status_message=status_message)
-        elif os.path.getsize(old_file) < 51200:
-            if os.path.exists(new_path) == False:
-                os.makedirs(new_path)
-            new_file = new_path + '/' + os.path.split(old_file)[1]
-            copyfile(old_file, new_file)
         else:
-            new_file = scale(old_file, new_path, 1024)
+            # 函数scale(old_file, new_path, size)修改图片尺寸
+            old_file = app.config['UPLOADED_PHOTOS_DEST'] + photo_path
+            new_path = os.path.split(old_file)[0] + '/' + bjt_date + time
+            if os.path.getsize(old_file) <= 4096:
+                status_message = ['danger', '照片上传失败', '照片被妖怪抓走啦', '再传一次吧']
+                return render_template('show.html', user_info=user_info, status_message=status_message)
+            elif os.path.getsize(old_file) < 51200:
+                if os.path.exists(new_path) == False:
+                    os.makedirs(new_path)
+                new_file = new_path + '/' + os.path.split(old_file)[1]
+                copyfile(old_file, new_file)
+            else:
+                new_file = scale(old_file, new_path, 1024)
 
-        file_url = '_uploads/' + new_file
-        status_message = ['success', '上报成功', file_url, '']
-        return render_template('show.html', user_info=user_info, status_message=status_message)
+            file_url = '_uploads/' + new_file
+            status_message = ['success', '上报成功', file_url, '']
+            return render_template('show.html', user_info=user_info, status_message=status_message)
 
 
     utc_t = datetime.utcnow().replace(tzinfo=timezone.utc)
