@@ -5,7 +5,7 @@ import os
 from shutil import copyfile
 import csv
 from flask import Flask, flash, request, render_template, escape
-from flask_uploads import UploadSet, configure_uploads, IMAGES, patch_request_class
+from flask_uploads import UploadSet, configure_uploads, IMAGES, patch_request_class, UploadNotAllowed
 from datetime import datetime, timedelta, timezone
 from PIL import Image
 
@@ -40,11 +40,20 @@ def upload_file():
         request_files = request.files['photo']
         username = request.form['username']
         temperature = request.form['temperature']
-        f_temperature = '%.2f' % float(temperature)
+        temperature_f = '%.2f' % float(temperature)
         time = request.form['time']
         cntime = timedict[time]
 
-        user_info = [username, cntime, temperature, request_files.filename.split('.')[1]]
+        try:
+            ext = request_files.filename.split('.')[1]
+        except:
+            ext = '无扩展名'
+            user_info = [username, cntime, temperature, ext]
+            print('可能是无扩展名错误：' + str(user_info))
+            status_message = ['danger', '照片上传失败', '照片格式错误，请重新上传', '微信告诉刘静怡，您用什么软件编辑了照片？']
+            return render_template('show.html', user_info=user_info, status_message=status_message)
+
+        user_info = [username, cntime, temperature, ext]
         print(user_info)
 
         utc_t = datetime.utcnow().replace(tzinfo=timezone.utc)
@@ -85,14 +94,14 @@ def upload_file():
                 logcsv.seek(cellseek)
                 # 此处缺少功能：如果有记录体温数据，是否再次上报
                 # logcsv.seek(cellseek)
-                logcsv.write(f_temperature)
+                logcsv.write(temperature_f)
 
         #开始保存图片
         try:
             photo_path = photos.save(request_files, folder=subfolder, name=rename + '.')
-        except:
-            # print(error)
-            status_message = ['danger', '照片格式错误', '再传一次吧', '告诉我，您用什么软件编辑了照片？']
+        except UploadNotAllowed:
+            print('可能是非图片扩展名：' + str(user_info))
+            status_message = ['danger', '照片上传失败', '照片格式错误，请重新上传', '微信告诉刘静怡，您用什么软件编辑了照片？']
             return render_template('show.html', user_info=user_info, status_message=status_message)
         else:
             # 函数scale(old_file, new_path, size)修改图片尺寸
@@ -147,6 +156,7 @@ def subpath_file(path_name):
         url_list.append([file_url, file])
     return render_template('listx.html', url_list=url_list)
 
+# 在浏览器渲染csv文件，未完成。
 @app.route('/open/<filename>')
 def open_file():
 
