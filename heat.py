@@ -56,6 +56,7 @@ def upload_file():
         rename = username + '+五部+' + bjt_date + cntime
         subfolder = bjt_date + '/' + bjt_date + time + '/'
         
+        # 开始写入csv文件
         listcsv_file = app.config['UPLOADED_PHOTOS_DEST'] + 'listcsv.csv'
         log_file = app.config['UPLOADED_PHOTOS_DEST'] + subfolder + bjt_date + time + '.csv'
 
@@ -82,10 +83,11 @@ def upload_file():
 
                 cellseek = logcsv.tell() + len(username)*3 + 1
                 logcsv.seek(cellseek)
-
+                # 此处缺少功能：如果有记录体温数据，是否再次上报
                 # logcsv.seek(cellseek)
                 logcsv.write(f_temperature)
 
+        #开始保存图片
         try:
             photo_path = photos.save(request_files, folder=subfolder, name=rename + '.')
         except:
