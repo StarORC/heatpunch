@@ -42,6 +42,7 @@ def upload_file():
         bjt_date = bjt.strftime('%m%d')
         bjt_date_y = bjt.strftime('%Y-%m-%d')
         bjt_time = bjt.strftime('%H:%M%p')
+        bjt_time_s = bjt.strftime('%H:%M:%S')
 
         request_files = request.files['photo']
         username = request.form['username']
@@ -54,13 +55,12 @@ def upload_file():
             ext = request_files.filename.split('.')[1]
         except:
             ext = '无扩展名'
-            user_info = [username, cntime, temperature, ext]
+            user_info = [username, cntime, temperature, ext, bjt_time_s]
             print('可能是无扩展名错误：' + str(user_info))
             flash(['照片格式错误，请重新上传', '微信告诉刘静怡，您用什么软件编辑了照片？'], 'danger')
             return render_template('heat.html', time_message=bjt_date_y + ' ' + bjt_time)
 
-        user_info = [username, cntime, temperature, ext]
-        print(user_info)
+        user_info = [username, cntime, temperature, ext, bjt_time_s]
 
         rename = username + '+五部+' + bjt_date + cntime
         subfolder = bjt_date + '/' + bjt_date + time + '/'
@@ -119,6 +119,7 @@ def upload_file():
                 new_file = scale(old_file, new_path, 1024)
 
             file_url = '_uploads/' + new_file
+            print(user_info)
             status_message = ['success', '上报成功', file_url, '']
             return render_template('show.html', user_info=user_info, status_message=status_message)
 
