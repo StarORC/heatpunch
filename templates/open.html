@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% block body %}
+<div class="container">
+    <h1>文件管理</h1>
+    <a href="{{ url_for('list_file') }}">返回列表</a>
+    <hr>
+
+    {% if url_filter == 'file_csv' %}
+    <table class="table table-hover">
+      <thead>
+        <tr>
+          <th scope="col">姓名</th>
+          <th scope="col">体温</th>
+        </tr>
+      </thead>
+      {% for row in dict_row %}
+      <tbody>
+        <tr>
+          <th scope="row">{{ row['name'] }}</th>
+          <td>{{ row['temp'] }}</td>
+        </tr>
+      </tbody>
+      {% endfor %}
+    </table>
+    {% elif url_filter == 'file_img' %}
+    <img src={{ file_path }} class="img-fluid">
+    {% endif %}
+</div>
+
+{{message}}
+{% endblock %}

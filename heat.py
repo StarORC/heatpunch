@@ -7,7 +7,7 @@ import csv
 from flask import Flask, flash, request, render_template, escape
 from flask_uploads import UploadSet, configure_uploads, IMAGES, patch_request_class, UploadNotAllowed
 from datetime import datetime, timedelta, timezone
-from PIL import Image
+from PIL import Image, ImageDraw, ImageFont
 
 app = Flask(__name__)
 app.secret_key = b'_5#y2L"F4Q8z$T4&*]c]/'
@@ -22,11 +22,18 @@ timedict = {'am':'上午', 'pm':'下午'}
 def seekgps(filepath, targetcol, offset, data):
     pass
 
-def scale(old_file, new_path, size):
+def scale_tag(old_file, new_path, size, text):
     with Image.open(old_file) as im:
         (ow, oh) = im.size
         scale = size/max(ow, oh)
         out = im.resize((int(ow*scale), int(oh*scale)))
+
+        # 给图片加标签
+        fnt = ImageFont.truetype('static/fonts/SourceHanSansSC-Medium.otf', 36)
+        d = ImageDraw.Draw(out)
+        d.polygon([(30,60), (40,50), (460,50), (445,78), (460,105), (40,105), (30,95)], fill=(4,188,212))
+        d.text((45,50), text, font=fnt, fill=(255,255,255))
+
         if os.path.exists(new_path) == False:
             os.makedirs(new_path)
         new_file = new_path + '/' + os.path.split(im.filename)[1]
@@ -110,13 +117,14 @@ def upload_file():
             if os.path.getsize(old_file) <= 4096:
                 status_message = ['danger', '照片上传失败', '照片被妖怪抓走啦', '再传一次吧']
                 return render_template('show.html', user_info=user_info, status_message=status_message)
-            elif os.path.getsize(old_file) < 51200:
-                if os.path.exists(new_path) == False:
-                    os.makedirs(new_path)
-                new_file = new_path + '/' + os.path.split(old_file)[1]
-                copyfile(old_file, new_file)
+            # elif os.path.getsize(old_file) < 51200:
+            #     if os.path.exists(new_path) == False:
+            #         os.makedirs(new_path)
+            #     new_file = new_path + '/' + os.path.split(old_file)[1]
+            #     copyfile(old_file, new_file)
             else:
-                new_file = scale(old_file, new_path, 1024)
+                tag = username + ' ' + bjt_date + cntime + ' ' + temperature + '℃'
+                new_file = scale_tag(old_file, new_path, 1024, tag)
 
             file_url = '_uploads/' + new_file
             print(user_info)
@@ -137,10 +145,16 @@ def list_file():
     for file in files_list:
         file_path = app.config['UPLOADED_PHOTOS_DEST'] + '/' + file
         if os.path.isfile(file_path):
-            file_url = photos.url('') + file
+            if file.split('.')[1] == 'csv':
+                url_filter = 'file_csv'
+                file_url = file_path
+            else:
+                url_filter = 'folder'
+                file_url = photos.url('') + file
         else:
+            url_filter = 'folder'
             file_url = '/listx/' + file
-        url_list.append([file_url, file])
+        url_list.append([url_filter, file_url, file])
     return render_template('listx.html', url_list=url_list)
 
 @app.route('/listx/<path:path_name>')
@@ -151,17 +165,29 @@ def subpath_file(path_name):
     for file in files_list:
         file_path = abs_path + '/' + file
         if os.path.isfile(file_path):
-            file_url = photos.url(escape(path_name)) + '/' + file
+            if file.split('.')[1] == 'csv':
+                url_filter = 'file_csv'
+                file_url = file_path
+            else:
+                url_filter = 'file_img'
+                file_url = photos.url(escape(path_name)) + '/' + file
         else:
+            url_filter = 'folder'
             file_url = '/listx/' + escape(path_name) + '/' + file
-        url_list.append([file_url, file])
+        url_list.append([url_filter, file_url, file])
     return render_template('listx.html', url_list=url_list)
 
 # 在浏览器渲染csv文件，未完成。
-@app.route('/open/<filename>')
-def open_file():
-
-    return render_template('listx.html')
+@app.route('/open/<path:file_path>?url_filter=<url_filter>')
+def open_file(file_path, url_filter):
+    if url_filter == 'file_csv':
+        dict_row = []
+        with open(file_path, 'r', encoding='utf-8-sig', newline='') as logcsv:
+            for row in csv.DictReader(logcsv):
+                dict_row.append(row)    
+        return render_template('open.html', url_filter=url_filter, dict_row=dict_row)
+    else:
+        return render_template('open.html', url_filter=url_filter, file_path=file_path)
 
 if __name__ == '__main__':
     app.run()
