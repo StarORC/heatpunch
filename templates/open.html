@@ -3,11 +3,12 @@
 {% block body %}
 <div class="container">
     <h1>文件管理</h1>
-    <a href="{{ url_for('list_file') }}">返回列表</a>
+    <a class="btn btn-primary btn-sm" href="{{ url_for('list_file') }}">首页</a>
+    <a class="btn btn-secondary btn-sm" href="javascript:history.go(-1);">返回上一页</a>
     <hr>
 
     {% if url_filter == 'file_csv' %}
-    <table class="table table-hover">
+    <table class="table table-hover table-sm">
       <thead>
         <tr>
           <th scope="col">姓名</th>
@@ -16,7 +17,11 @@
       </thead>
       {% for row in dict_row %}
       <tbody>
+        {% if row['temp'] == '00.00' %}
+        <tr class="table-danger">
+        {% else %}
         <tr>
+        {% endif %}
           <th scope="row">{{ row['name'] }}</th>
           <td>{{ row['temp'] }}</td>
         </tr>
