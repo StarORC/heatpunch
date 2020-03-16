@@ -36,6 +36,12 @@ def scale(old_file, new_path, size):
 @app.route('/', methods=['GET', 'POST'])
 def upload_file():
     if request.method == 'POST' and 'photo' in request.files:
+        # 格式化时间
+        utc_t = datetime.utcnow().replace(tzinfo=timezone.utc)
+        bjt = utc_t.astimezone(timezone(timedelta(hours=8)))
+        bjt_date = bjt.strftime('%m%d')
+        bjt_date_y = bjt.strftime('%Y-%m-%d')
+        bjt_time = bjt.strftime('%H:%M%p')
 
         request_files = request.files['photo']
         username = request.form['username']
@@ -50,17 +56,11 @@ def upload_file():
             ext = '无扩展名'
             user_info = [username, cntime, temperature, ext]
             print('可能是无扩展名错误：' + str(user_info))
-            status_message = ['danger', '照片上传失败', '照片格式错误，请重新上传', '微信告诉刘静怡，您用什么软件编辑了照片？']
-            return render_template('show.html', user_info=user_info, status_message=status_message)
+            flash(['照片格式错误，请重新上传', '微信告诉刘静怡，您用什么软件编辑了照片？'], 'danger')
+            return render_template('heat.html', time_message=bjt_date_y + ' ' + bjt_time)
 
         user_info = [username, cntime, temperature, ext]
         print(user_info)
-
-        utc_t = datetime.utcnow().replace(tzinfo=timezone.utc)
-        bjt = utc_t.astimezone(timezone(timedelta(hours=8)))
-        bjt_date = bjt.strftime('%m%d')
-        bjt_date_y = bjt.strftime('%Y-%m-%d')
-        bjt_time = bjt.strftime('%H:%M%p')
 
         rename = username + '+五部+' + bjt_date + cntime
         subfolder = bjt_date + '/' + bjt_date + time + '/'
@@ -75,8 +75,8 @@ def upload_file():
         with open(log_file, 'r+', encoding='utf-8-sig', newline='') as logcsv:
             usergps = logcsv.read().find(username)
             if usergps == -1:
-                flash('【 ' + username + ' 】请输入正确的姓名', 'warning')
-                return render_template('heat.html', message=bjt_date_y + ' ' + bjt_time)
+                flash(['【 ' + username + ' 】请输入正确的姓名', ''], 'warning')
+                return render_template('heat.html', time_message=bjt_date_y + ' ' + bjt_time)
             else:
                 logcsv.seek(0)
                 namecol = [row[0] for row in csv.reader(logcsv)]
@@ -101,8 +101,8 @@ def upload_file():
             photo_path = photos.save(request_files, folder=subfolder, name=rename + '.')
         except UploadNotAllowed:
             print('可能是非图片扩展名：' + str(user_info))
-            status_message = ['danger', '照片上传失败', '照片格式错误，请重新上传', '微信告诉刘静怡，您用什么软件编辑了照片？']
-            return render_template('show.html', user_info=user_info, status_message=status_message)
+            flash(['照片格式错误，请重新上传', '微信告诉刘静怡，您用什么软件编辑了照片？'], 'danger')
+            return render_template('heat.html', time_message=bjt_date_y + ' ' + bjt_time)
         else:
             # 函数scale(old_file, new_path, size)修改图片尺寸
             old_file = app.config['UPLOADED_PHOTOS_DEST'] + photo_path

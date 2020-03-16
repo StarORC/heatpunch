@@ -10,7 +10,7 @@
 <body>
 {% for message in get_flashed_messages(with_categories=True) %}
 <div class="alert alert-{{ message[0] }} progress-bar-striped text-center">
-    <b>{{ message[1] }}</b>
+    <b>{{ message[1][0] }}<br>{{ message[1][1] }}</b>
 </div>
 {% endfor %}
 
