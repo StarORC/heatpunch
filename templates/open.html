@@ -8,7 +8,7 @@
     <hr>
 
     {% if file[0] == 'file_csv' %}
-    <a class="btn btn-success btn-sm" href="{{ file[2][0] }}" download>下载：{{ file[1] }}</a>
+    <a class="btn btn-success btn-sm" href="{{ file[2][0] }}" download>下载：{{ file[1] }}</a><br>
     <table class="table table-hover table-sm">
       <thead>
         <tr>
@@ -30,7 +30,7 @@
       {% endfor %}
     </table>
     {% elif file[0] == 'file_img' %}
-    <a class="btn btn-success btn-sm" href="{{ file[2] }}" download>下载：{{ file[1] }}</a>
+    <a class="btn btn-success btn-sm" href="{{ file[2] }}" download>下载：{{ file[1] }}</a><br>
     <img src={{ file[2] }} class="img-fluid">
     {% endif %}
 </div>
