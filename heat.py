@@ -159,6 +159,7 @@ def list_file():
             url_filter = 'folder'
             file_url = '/listx/' + file
         url_list.append([url_filter, file_url, file])
+    url_list.sort(reverse = True)
     return render_template('listx.html', url_list=url_list)
 
 @app.route('/listx/<path:path_name>')
@@ -182,6 +183,7 @@ def subpath_file(path_name):
             url_filter = 'folder'
             file_url = '/listx/' + escape(path_name) + '/' + file
         url_list.append([url_filter, file_url, file])
+    url_list.sort(reverse = True)
     return render_template('listx.html', url_list=url_list)
 
 # 在浏览器页面展示csv和图片文件。
