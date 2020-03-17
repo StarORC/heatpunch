@@ -138,18 +138,22 @@ def upload_file():
     bjt_time = bjt.strftime('%H:%M%p')
     return render_template('heat.html', time_message=bjt_date_y + ' ' + bjt_time)
 
+# 通过listx.html筛选csv、img文件用open.html打开，其他文件下载，目录进入
 @app.route('/listx')
 def list_file():
     files_list = os.listdir(app.config['UPLOADED_PHOTOS_DEST'])
     url_list = []
     for file in files_list:
-        file_path = app.config['UPLOADED_PHOTOS_DEST'] + '/' + file
+        file_path = app.config['UPLOADED_PHOTOS_DEST'] + file
         if os.path.isfile(file_path):
             if file.split('.')[1] == 'csv':
                 url_filter = 'file_csv'
                 file_url = file_path
+            elif file.split('.')[1] in IMAGES:
+                url_filter = 'file_img'
+                file_url = photos.url('') + file
             else:
-                url_filter = 'folder'
+                url_filter = 'file_other'
                 file_url = photos.url('') + file
         else:
             url_filter = 'folder'
@@ -168,8 +172,11 @@ def subpath_file(path_name):
             if file.split('.')[1] == 'csv':
                 url_filter = 'file_csv'
                 file_url = file_path
-            else:
+            elif file.split('.')[1] in IMAGES:
                 url_filter = 'file_img'
+                file_url = photos.url(escape(path_name)) + '/' + file
+            else:
+                url_filter = 'file_other'
                 file_url = photos.url(escape(path_name)) + '/' + file
         else:
             url_filter = 'folder'
@@ -177,17 +184,21 @@ def subpath_file(path_name):
         url_list.append([url_filter, file_url, file])
     return render_template('listx.html', url_list=url_list)
 
-# 在浏览器渲染csv文件，未完成。
+# 在浏览器页面展示csv和图片文件。
 @app.route('/open/<path:file_path>?url_filter=<url_filter>')
 def open_file(file_path, url_filter):
+    file_name = os.path.split(file_path)[1]
     if url_filter == 'file_csv':
+        download_link = '/_uploads/' + file_path
         dict_row = []
         with open(file_path, 'r', encoding='utf-8-sig', newline='') as logcsv:
             for row in csv.DictReader(logcsv):
                 dict_row.append(row)    
-        return render_template('open.html', url_filter=url_filter, dict_row=dict_row)
+        file_content = [download_link, dict_row]
     else:
-        return render_template('open.html', url_filter=url_filter, file_path=file_path)
+        file_content = file_path
+    file = [url_filter, file_name, file_content]
+    return render_template('open.html', file=file)
 
 if __name__ == '__main__':
     app.run()

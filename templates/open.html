@@ -3,11 +3,12 @@
 {% block body %}
 <div class="container">
     <h1>文件管理</h1>
-    <a class="btn btn-primary btn-sm" href="{{ url_for('list_file') }}">首页</a>
+    <a class="btn btn-primary btn-sm" href="/listx">首页</a>
     <a class="btn btn-secondary btn-sm" href="javascript:history.go(-1);">返回上一页</a>
     <hr>
 
-    {% if url_filter == 'file_csv' %}
+    {% if file[0] == 'file_csv' %}
+    <a class="btn btn-success btn-sm" href="{{ file[2][0] }}" download>下载：{{ file[1] }}</a>
     <table class="table table-hover table-sm">
       <thead>
         <tr>
@@ -15,7 +16,7 @@
           <th scope="col">体温</th>
         </tr>
       </thead>
-      {% for row in dict_row %}
+      {% for row in file[2][1] %}
       <tbody>
         {% if row['temp'] == '00.00' %}
         <tr class="table-danger">
@@ -28,8 +29,9 @@
       </tbody>
       {% endfor %}
     </table>
-    {% elif url_filter == 'file_img' %}
-    <img src={{ file_path }} class="img-fluid">
+    {% elif file[0] == 'file_img' %}
+    <a class="btn btn-success btn-sm" href="{{ file[2] }}" download>下载：{{ file[1] }}</a>
+    <img src={{ file[2] }} class="img-fluid">
     {% endif %}
 </div>
 
