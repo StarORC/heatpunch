@@ -34,7 +34,7 @@ def scale_tag(old_file, new_path, size, text):
         d.polygon([(30,60), (40,50), (460,50), (445,78), (460,105), (40,105), (30,95)], fill=(4,188,212))
         d.text((45,50), text, font=fnt, fill=(255,255,255))
 
-        if os.path.exists(new_path) == False:
+        if not os.path.exists(new_path):
             os.makedirs(new_path)
         new_file = new_path + '/' + os.path.split(im.filename)[1]
         out.save(new_file)
@@ -48,6 +48,7 @@ def upload_file():
         bjt = utc_t.astimezone(timezone(timedelta(hours=8)))
         bjt_date = bjt.strftime('%m%d')
         bjt_date_y = bjt.strftime('%Y-%m-%d')
+        bjt_date_year = bjt.strftime('%Y%m%d')
         bjt_time = bjt.strftime('%H:%M%p')
         bjt_time_s = bjt.strftime('%H:%M:%S')
 
@@ -59,7 +60,7 @@ def upload_file():
         cntime = timedict[time]
 
         try:
-            ext = request_files.filename.split('.')[1]
+            ext = request_files.filename.rsplit('.', maxsplit=1)[1]
         except:
             ext = '无扩展名'
             user_info = [username, cntime, temperature, ext, bjt_time_s]
@@ -74,10 +75,13 @@ def upload_file():
         
         # 开始写入csv文件
         listcsv_file = app.config['UPLOADED_PHOTOS_DEST'] + 'listcsv.csv'
-        log_file = app.config['UPLOADED_PHOTOS_DEST'] + subfolder + bjt_date + time + '.csv'
+        log_filename = bjt_date + time + '.csv'
+        log_path = app.config['UPLOADED_PHOTOS_DEST'] + bjt_date + '/'
+        log_file = log_path + log_filename
 
-        if os.path.exists(log_file) == False:
-            os.makedirs(app.config['UPLOADED_PHOTOS_DEST'] + subfolder)
+        if not os.path.exists(log_file):
+            if not os.path.exists(log_path):
+                os.makedirs(log_path)            
             copyfile(listcsv_file, log_file)
         with open(log_file, 'r+', encoding='utf-8-sig', newline='') as logcsv:
             usergps = logcsv.read().find(username)
@@ -111,17 +115,12 @@ def upload_file():
             flash(['照片格式错误，请重新上传', '微信告诉刘静怡，您用什么软件编辑了照片？'], 'danger')
             return render_template('heat.html', time_message=bjt_date_y + ' ' + bjt_time)
         else:
-            # 函数scale(old_file, new_path, size)修改图片尺寸
+            # 函数scale_tag(old_file, new_path, size, tag)修改图片尺寸，加标签
             old_file = app.config['UPLOADED_PHOTOS_DEST'] + photo_path
-            new_path = os.path.split(old_file)[0] + '/' + bjt_date + time
+            new_path = app.config['UPLOADED_PHOTOS_DEST'] + bjt_date + '/' + bjt_date_year + cntime
             if os.path.getsize(old_file) <= 4096:
                 status_message = ['danger', '照片上传失败', '照片被妖怪抓走啦', '再传一次吧']
                 return render_template('show.html', user_info=user_info, status_message=status_message)
-            # elif os.path.getsize(old_file) < 51200:
-            #     if os.path.exists(new_path) == False:
-            #         os.makedirs(new_path)
-            #     new_file = new_path + '/' + os.path.split(old_file)[1]
-            #     copyfile(old_file, new_file)
             else:
                 tag = username + ' ' + bjt_date + cntime + ' ' + temperature + '℃'
                 new_file = scale_tag(old_file, new_path, 1024, tag)
@@ -183,7 +182,7 @@ def subpath_file(path_name):
             url_filter = 'folder'
             file_url = '/listx/' + escape(path_name) + '/' + file
         url_list.append([url_filter, file_url, file])
-    url_list.sort(reverse = True)
+    url_list.sort()
     return render_template('listx.html', url_list=url_list)
 
 # 在浏览器页面展示csv和图片文件。
