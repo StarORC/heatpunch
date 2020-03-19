@@ -141,7 +141,7 @@ def upload_file():
     return render_template('heat.html', time_message=bjt_date_y + ' ' + bjt_time)
 
 # 通过listx.html筛选csv、img文件用open.html打开，其他文件下载，目录进入
-@app.route('/listx')
+@app.route('/listx/')
 def list_file():
     files_list = os.listdir(app.config['UPLOADED_PHOTOS_DEST'])
     url_list = []
