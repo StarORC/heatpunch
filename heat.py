@@ -2,9 +2,11 @@
 # -*- coding:UTF-8-sig -*-
 
 import os
+import io
+import zipfile
 from shutil import copyfile
 import csv
-from flask import Flask, flash, request, render_template, escape
+from flask import Flask, flash, request, render_template, escape, send_file
 from flask_uploads import UploadSet, configure_uploads, IMAGES, patch_request_class, UploadNotAllowed
 from datetime import datetime, timedelta, timezone
 from PIL import Image, ImageDraw, ImageFont
@@ -38,7 +40,8 @@ def scale_tag(old_file, new_path, size, text):
             os.makedirs(new_path)
         new_file = new_path + '/' + os.path.split(im.filename)[1]
         out.save(new_file)
-    return(new_file)
+    return new_file
+
 
 @app.route('/', methods=['GET', 'POST'])
 def upload_file():
@@ -159,7 +162,7 @@ def list_file():
             file_url = '/listx/' + file
         url_list.append([url_filter, file_url, file])
     url_list.sort(reverse = True)
-    return render_template('listx.html', url_list=url_list)
+    return render_template('listx.html', url_list=url_list, abs_path=app.config['UPLOADED_PHOTOS_DEST'])
 
 @app.route('/listx/<path:path_name>')
 def subpath_file(path_name):
@@ -183,7 +186,7 @@ def subpath_file(path_name):
             file_url = '/listx/' + escape(path_name) + '/' + file
         url_list.append([url_filter, file_url, file])
     url_list.sort()
-    return render_template('listx.html', url_list=url_list)
+    return render_template('listx.html', url_list=url_list, abs_path=abs_path)
 
 # 在浏览器页面展示csv和图片文件。
 @app.route('/open/<path:file_path>?url_filter=<url_filter>')
@@ -200,6 +203,20 @@ def open_file(file_path, url_filter):
         file_content = file_path
     file = [url_filter, file_name, file_content]
     return render_template('open.html', file=file)
+
+@app.route('/download/<path:abs_path>')
+def download(abs_path):
+    files_list = os.listdir(abs_path)
+    zbuffer_name = '{}.zip'.format(abs_path.rsplit('/', maxsplit=1)[1])
+    zbuffer = io.BytesIO()
+    with zipfile.ZipFile(zbuffer, 'a', zipfile.ZIP_DEFLATED) as zf:
+        for file in files_list:
+            file_path = abs_path + '/' + file
+            if os.path.isfile(file_path):
+                zf.write(file_path)
+    zbuffer.seek(0)
+
+    return send_file(zbuffer, mimetype='application/zip', as_attachment=True, attachment_filename=zbuffer_name, cache_timeout=0)
 
 if __name__ == '__main__':
     app.run()
