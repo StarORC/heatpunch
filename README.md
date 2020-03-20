@@ -3,7 +3,7 @@
 
 Upload thermometer photo,Register name and temperature, record in csv file
 
-'''
+```
 /heat_punch/
 ├─photos/
 │  ├─0318/ # 此目录按日子自动生成
@@ -32,4 +32,4 @@ Upload thermometer photo,Register name and temperature, record in csv file
 │  └─show.html
 ├─venv/
 └─heat.py
-'''
+```
