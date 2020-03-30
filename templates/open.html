@@ -13,21 +13,20 @@
       <thead>
         <tr>
           <th scope="col">姓名</th>
-          <th scope="col">体温</th>
+          <th scope="col">上午</th>
+          <th scope="col">下午</th>
         </tr>
       </thead>
-      {% for row in file[2][1] %}
       <tbody>
-        {% if row['temp'] == '00.00' %}
-        <tr class="table-danger">
-        {% else %}
+        {% for row in file[2][1] %}
         <tr>
-        {% endif %}
-          <th scope="row">{{ row['name'] }}</th>
-          <td>{{ row['temp'] }}</td>
+          <th scope="row" class="{{ 'table-danger' if '00.00' in row.values() }}">{{ row['name'] }}</th>
+          <td class="{{ 'table-danger' if row['am'] == '00.00' }}">{{ row['am'] }}</td>
+          <td class="{{ 'table-danger' if row['pm'] == '00.00' }}">{{ row['pm'] }}</td>
         </tr>
+        {% endfor %}
       </tbody>
-      {% endfor %}
+
     </table>
     {% elif file[0] == 'file_img' %}
     <a class="btn btn-success btn-sm" href="{{ file[2] }}" download>下载：{{ file[1] }}</a><br>

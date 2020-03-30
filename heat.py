@@ -1,6 +1,9 @@
 #!/usr/bin/env python3
 # -*- coding:UTF-8-sig -*-
 
+# 虚拟环境需要的包：
+# flask, flask_uploads, Pillow
+
 import os
 import io
 import zipfile
@@ -19,7 +22,7 @@ app.config['UPLOADED_PHOTOS_DEST'] = 'photos/'
 photos = UploadSet('photos', IMAGES)
 configure_uploads(app, photos)
 patch_request_class(app)  # 文件大小限制，默认为16MB
-timedict = {'am':'上午', 'pm':'下午'}
+timedict = {'am':['上午', 1], 'pm':['下午', 7]}
 
 def seekgps(filepath, targetcol, offset, data):
     pass
@@ -60,7 +63,7 @@ def upload_file():
         temperature = request.form['temperature']
         temperature_f = '%.2f' % float(temperature)
         time = request.form['time']
-        cntime = timedict[time]
+        cntime = timedict[time][0]
 
         try:
             ext = request_files.filename.rsplit('.', maxsplit=1)[1]
@@ -78,7 +81,7 @@ def upload_file():
         
         # 开始写入csv文件
         listcsv_file = app.config['UPLOADED_PHOTOS_DEST'] + 'listcsv.csv'
-        log_filename = bjt_date + time + '.csv'
+        log_filename = bjt_date + '.csv'
         log_path = app.config['UPLOADED_PHOTOS_DEST'] + bjt_date + '/'
         log_file = log_path + log_filename
 
@@ -104,7 +107,7 @@ def upload_file():
                     logcsv.readline()
                 # 读取username之前的几行，把指针移到username前
 
-                cellseek = logcsv.tell() + len(username)*3 + 1
+                cellseek = logcsv.tell() + len(username)*3 + timedict[time][1]
                 logcsv.seek(cellseek)
                 # 此处缺少功能：如果有记录体温数据，是否再次上报
                 # logcsv.seek(cellseek)
@@ -213,7 +216,7 @@ def download(abs_path):
         for file in files_list:
             file_path = abs_path + '/' + file
             if os.path.isfile(file_path):
-                zf.write(file_path)
+                zf.write(file_path, arcname=file)
     zbuffer.seek(0)
 
     return send_file(zbuffer, mimetype='application/zip', as_attachment=True, attachment_filename=zbuffer_name, cache_timeout=0)
