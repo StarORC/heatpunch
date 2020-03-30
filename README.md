@@ -11,8 +11,7 @@ Upload thermometer photo,Register name and temperature, record in csv file
 │  │  ├─0318pm/
 │  │  ├─20200318上午/
 │  │  ├─20200318下午/
-│  │  ├─0318am.csv
-│  │  └─0318pm.csv
+│  │  └─0318.csv
 │  ├─listcsv.csv
 │  └─PHOTOS.md
 ├─static/
@@ -30,6 +29,5 @@ Upload thermometer photo,Register name and temperature, record in csv file
 │  ├─listx.html
 │  ├─open.html
 │  └─show.html
-├─venv/
 └─heat.py
 ```
