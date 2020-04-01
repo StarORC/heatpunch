@@ -6,6 +6,8 @@
 	<title>每日体温上报</title>
 	<!-- <link href="{{url_for('static', filename='css/bootstrap.min.css')}}" rel="stylesheet"> -->
 	<link href="https://cdn.bootcss.com/twitter-bootstrap/4.4.1/css/bootstrap.min.css" rel="stylesheet">
+    {% block head %}
+    {% endblock %}
 </head>
 <body>
 {% for message in get_flashed_messages(with_categories=True) %}
