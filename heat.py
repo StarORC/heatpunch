@@ -90,23 +90,20 @@ def upload_file():
                 os.makedirs(log_path)            
             copyfile(listcsv_file, log_file)
         with open(log_file, 'r+', encoding='utf-8-sig', newline='') as logcsv:
-            usergps = logcsv.read().find(username)
-            if usergps == -1:
+            name_list = [row[0] for row in csv.reader(logcsv)]
+            try:
+                row_num = name_list.index(username)
+                # 找到username在哪行
+            except ValueError as e:
+                print(e)
                 flash(['【 ' + username + ' 】请输入正确的姓名', ''], 'warning')
                 return render_template('heat.html', time_message=bjt_date_y + ' ' + bjt_time)
             else:
                 logcsv.seek(0)
-                namecol = [row[0] for row in csv.reader(logcsv)]
-                rownum = namecol.index(username)
-                # 找到username在哪行
-
-                logcsv.seek(0)
-                # 把seek指针复位到开头，上一段代码执行后，指针到了最后
-
-                for i in range(rownum):
+                # 把seek指针复位到开头，index后，指针到了最后
+                for i in range(row_num):
                     logcsv.readline()
                 # 读取username之前的几行，把指针移到username前
-
                 cellseek = logcsv.tell() + len(username)*3 + timedict[time][1]
                 logcsv.seek(cellseek)
                 # 此处缺少功能：如果有记录体温数据，是否再次上报
