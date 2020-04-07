@@ -71,7 +71,7 @@ def upload_file():
             ext = '无扩展名'
             user_info = [username, cntime, temperature, ext, bjt_time_s]
             print('可能是无扩展名错误：' + str(user_info))
-            flash(['照片格式错误，请重新上传', '微信告诉刘静怡，您用什么软件编辑了照片？'], 'danger')
+            flash(['照片格式错误，请重新上传', '微信告诉统计员，您用什么软件编辑了照片？'], 'danger')
             return render_template('heat.html', time_message=bjt_date_y + ' ' + bjt_time)
 
         user_info = [username, cntime, temperature, ext, bjt_time_s]
@@ -115,15 +115,18 @@ def upload_file():
             photo_path = photos.save(request_files, folder=subfolder, name=rename + '.')
         except UploadNotAllowed:
             print('可能是非图片扩展名：' + str(user_info))
-            flash(['照片格式错误，请重新上传', '微信告诉刘静怡，您用什么软件编辑了照片？'], 'danger')
+            flash(['照片格式错误，请重新上传', '微信告诉统计员，您用什么软件编辑了照片？'], 'danger')
             return render_template('heat.html', time_message=bjt_date_y + ' ' + bjt_time)
         else:
             # 函数scale_tag(old_file, new_path, size, tag)修改图片尺寸，加标签
             old_file = app.config['UPLOADED_PHOTOS_DEST'] + photo_path
             new_path = app.config['UPLOADED_PHOTOS_DEST'] + bjt_date + '/' + bjt_date_year + cntime
             if os.path.getsize(old_file) <= 4096:
-                status_message = ['danger', '照片上传失败', '照片被妖怪抓走啦', '再传一次吧']
-                return render_template('show.html', user_info=user_info, status_message=status_message)
+                # status_message = ['danger', '照片上传失败', '照片被妖怪抓走啦', '再传一次吧']
+                # return render_template('show.html', user_info=user_info, status_message=status_message)
+                os.remove(old_file)
+                flash(['！！！照片上传失败 ！！！', '>>> 请重新上传 <<<'], 'danger')
+                return render_template('heat.html', time_message=bjt_date_y + ' ' + bjt_time)
             else:
                 tag = username + ' ' + bjt_date + cntime + ' ' + temperature + '℃'
                 new_file = scale_tag(old_file, new_path, 1024, tag)
