@@ -125,6 +125,7 @@ def upload_file():
                 # status_message = ['danger', '照片上传失败', '照片被妖怪抓走啦', '再传一次吧']
                 # return render_template('show.html', user_info=user_info, status_message=status_message)
                 os.remove(old_file)
+                print('0字节图片：' + str(user_info))
                 flash(['！！！照片上传失败 ！！！', '>>> 请重新上传 <<<'], 'danger')
                 return render_template('heat.html', time_message=bjt_date_y + ' ' + bjt_time)
             else:
