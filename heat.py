@@ -148,10 +148,13 @@ def upload_file():
 @app.route('/listx/')
 def list_file():
     files_list = os.listdir(app.config['UPLOADED_PHOTOS_DEST'])
+    folder_num = 0
+    file_num = 0
     url_list = []
     for file in files_list:
         file_path = app.config['UPLOADED_PHOTOS_DEST'] + file
         if os.path.isfile(file_path):
+            file_num += 1
             if file.split('.')[1] == 'csv':
                 url_filter = 'file_csv'
                 file_url = file_path
@@ -162,20 +165,25 @@ def list_file():
                 url_filter = 'file_other'
                 file_url = photos.url('') + file
         else:
+            folder_num += 1
             url_filter = 'folder'
             file_url = '/listx/' + file
         url_list.append([url_filter, file_url, file])
     url_list.sort(reverse = True)
-    return render_template('listx.html', url_list=url_list, abs_path=app.config['UPLOADED_PHOTOS_DEST'])
+    element_num = [folder_num, file_num]
+    return render_template('listx.html', url_list=url_list, abs_path=app.config['UPLOADED_PHOTOS_DEST'], element_num = element_num)
 
 @app.route('/listx/<path:path_name>')
 def subpath_file(path_name):
     abs_path = app.config['UPLOADED_PHOTOS_DEST'] + escape(path_name)
     files_list = os.listdir(abs_path)
+    folder_num = 0
+    file_num = 0
     url_list = []
     for file in files_list:
         file_path = abs_path + '/' + file
         if os.path.isfile(file_path):
+            file_num += 1
             if file.split('.')[1] == 'csv':
                 url_filter = 'file_csv'
                 file_url = file_path
@@ -186,11 +194,13 @@ def subpath_file(path_name):
                 url_filter = 'file_other'
                 file_url = photos.url(escape(path_name)) + '/' + file
         else:
+            folder_num += 1
             url_filter = 'folder'
             file_url = '/listx/' + escape(path_name) + '/' + file
         url_list.append([url_filter, file_url, file])
     url_list.sort()
-    return render_template('listx.html', url_list=url_list, abs_path=abs_path)
+    element_num = [folder_num, file_num]
+    return render_template('listx.html', url_list=url_list, abs_path=abs_path, element_num = element_num)
 
 # 在浏览器页面展示csv和图片文件。
 @app.route('/open/<path:file_path>?url_filter=<url_filter>')
