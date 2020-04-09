@@ -21,14 +21,24 @@
 	<hr>
 
 	{% for url in url_list %}
-		{% if url[0] in ['file_csv', 'file_img'] %}
+		{% if url[0] == 'file_csv' %}
+			<div class="d-flex align-items-center">
+				<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#333" width="18px" height="18px"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M4 10.5c-.83 0-1.5.67-1.5 1.5s.67 1.5 1.5 1.5 1.5-.67 1.5-1.5-.67-1.5-1.5-1.5zm0-6c-.83 0-1.5.67-1.5 1.5S3.17 7.5 4 7.5 5.5 6.83 5.5 6 4.83 4.5 4 4.5zm0 12c-.83 0-1.5.68-1.5 1.5s.68 1.5 1.5 1.5 1.5-.68 1.5-1.5-.67-1.5-1.5-1.5zM7 19h14v-2H7v2zm0-6h14v-2H7v2zm0-8v2h14V5H7z"/></svg>
+				&nbsp;<a href="{{ url_for('open_file', file_path=url[1], url_filter=url[0]) }}">{{ url[2] }}</a>
+			</div>
+		{% elif url[0] == 'file_img' %}
 			<div class="d-flex align-items-center">
 				<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#333" width="18px" height="18px"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg>
 				&nbsp;<a href="{{ url_for('open_file', file_path=url[1], url_filter=url[0]) }}">{{ url[2] }}</a>
 			</div>
-		{% else %}
+		{% elif url[0] == 'folder' %}
 			<div class="d-flex align-items-center">
 				<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#333" width="18px" height="18px"><path d="M0 0h24v24H0z" fill="none"/><path d="M20 6h-8l-2-2H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm0 12H4V8h16v10z"/></svg>
+				&nbsp;<a href="{{ url[1] }}">{{ url[2] }}</a>
+			</div>
+		{% else %}
+			<div class="d-flex align-items-center">
+				<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="black" width="18px" height="18px"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M8 16h8v2H8zm0-4h8v2H8zm6-10H6c-1.1 0-2 .9-2 2v16c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm4 18H6V4h7v5h5v11z"/></svg>
 				&nbsp;<a href="{{ url[1] }}">{{ url[2] }}</a>
 			</div>
 		{% endif %}
