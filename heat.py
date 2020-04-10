@@ -9,7 +9,7 @@ import io
 import zipfile
 from shutil import copyfile
 import csv
-from flask import Flask, flash, request, render_template, escape, send_file
+from flask import Flask, flash, request, redirect, url_for, render_template, escape, send_file, session
 from flask_uploads import UploadSet, configure_uploads, IMAGES, patch_request_class, UploadNotAllowed
 from datetime import datetime, timedelta, timezone
 from PIL import Image, ImageDraw, ImageFont
@@ -22,7 +22,6 @@ app.config['UPLOADED_PHOTOS_DEST'] = 'photos/'
 photos = UploadSet('photos', IMAGES)
 configure_uploads(app, photos)
 patch_request_class(app)  # 文件大小限制，默认为16MB
-timedict = {'am':['上午', 1], 'pm':['下午', 7]}
 
 def seekgps(filepath, targetcol, offset, data):
     pass
@@ -48,15 +47,17 @@ def scale_tag(old_file, new_path, size, text):
 
 @app.route('/', methods=['GET', 'POST'])
 def upload_file():
+    # 格式化时间
+    utc_t = datetime.utcnow().replace(tzinfo=timezone.utc)
+    bjt = utc_t.astimezone(timezone(timedelta(hours=8)))
+    bjt_date = bjt.strftime('%m%d')
+    bjt_date_y = bjt.strftime('%Y-%m-%d')
+    bjt_date_year = bjt.strftime('%Y%m%d')
+    bjt_time = bjt.strftime('%H:%M%p')
+    bjt_time_s = bjt.strftime('%H:%M:%S')
+    timedict = {'am':['上午', 1], 'pm':['下午', 7]}
+
     if request.method == 'POST' and 'photo' in request.files:
-        # 格式化时间
-        utc_t = datetime.utcnow().replace(tzinfo=timezone.utc)
-        bjt = utc_t.astimezone(timezone(timedelta(hours=8)))
-        bjt_date = bjt.strftime('%m%d')
-        bjt_date_y = bjt.strftime('%Y-%m-%d')
-        bjt_date_year = bjt.strftime('%Y%m%d')
-        bjt_time = bjt.strftime('%H:%M%p')
-        bjt_time_s = bjt.strftime('%H:%M:%S')
 
         request_files = request.files['photo']
         username = request.form['username']
@@ -67,18 +68,21 @@ def upload_file():
 
         try:
             ext = request_files.filename.rsplit('.', maxsplit=1)[1]
-        except:
+        except IndexError as e:
             ext = '无扩展名'
             user_info = [username, cntime, temperature, ext, bjt_time_s]
-            print('可能是无扩展名错误：' + str(user_info))
+            print('无扩展名错误：【' + str(e) + '】' + str(user_info))
             flash(['照片格式错误，请重新上传', '微信告诉统计员，您用什么软件编辑了照片？'], 'danger')
-            return render_template('heat.html', time_message=bjt_date_y + ' ' + bjt_time)
+            return redirect(request.url)
+        else:
+            if ext not in IMAGES:
+                user_info = [username, cntime, temperature, ext, bjt_time_s]
+                print('可能是非图片扩展名：' + str(user_info))
+                flash(['照片格式错误，请重新上传', '微信告诉统计员，您用什么软件编辑了照片？'], 'danger')
+                return redirect(request.url)
 
         user_info = [username, cntime, temperature, ext, bjt_time_s]
 
-        rename = username + '+五部+' + bjt_date + cntime
-        subfolder = bjt_date + '/' + bjt_date + time + '/'
-        
         # 开始写入csv文件
         listcsv_file = app.config['UPLOADED_PHOTOS_DEST'] + 'listcsv.csv'
         log_filename = bjt_date + '.csv'
@@ -97,10 +101,10 @@ def upload_file():
             except ValueError as e:
                 print(e)
                 flash(['【 ' + username + ' 】请输入正确的姓名', ''], 'warning')
-                return render_template('heat.html', time_message=bjt_date_y + ' ' + bjt_time)
+                return redirect(request.url)
             else:
                 logcsv.seek(0)
-                # 把seek指针复位到开头，index后，指针到了最后
+                # 把seek指针复位到开头。index后，指针到了最后
                 for i in range(row_num):
                     logcsv.readline()
                 # 读取username之前的几行，把指针移到username前
@@ -111,38 +115,32 @@ def upload_file():
                 logcsv.write(temperature_f)
 
         #开始保存图片
-        try:
-            photo_path = photos.save(request_files, folder=subfolder, name=rename + '.')
-        except UploadNotAllowed:
-            print('可能是非图片扩展名：' + str(user_info))
-            flash(['照片格式错误，请重新上传', '微信告诉统计员，您用什么软件编辑了照片？'], 'danger')
-            return render_template('heat.html', time_message=bjt_date_y + ' ' + bjt_time)
+        subfolder = bjt_date + '/' + bjt_date + time + '/'
+        rename = username + '+五部+' + bjt_date + cntime
+        photo_path = photos.save(request_files, folder=subfolder, name=rename + '.')
+        # 函数scale_tag(old_file, new_path, size, tag)修改图片尺寸，加标签
+        old_file = app.config['UPLOADED_PHOTOS_DEST'] + photo_path
+        new_path = app.config['UPLOADED_PHOTOS_DEST'] + bjt_date + '/' + bjt_date_year + cntime
+        if os.path.getsize(old_file) <= 4096:
+            os.remove(old_file)
+            print('0字节图片：' + str(user_info))
+            flash(['！！！照片上传失败 ！！！', '>>> 请重新上传 <<<'], 'danger')
+            return redirect(request.url)
         else:
-            # 函数scale_tag(old_file, new_path, size, tag)修改图片尺寸，加标签
-            old_file = app.config['UPLOADED_PHOTOS_DEST'] + photo_path
-            new_path = app.config['UPLOADED_PHOTOS_DEST'] + bjt_date + '/' + bjt_date_year + cntime
-            if os.path.getsize(old_file) <= 4096:
-                # status_message = ['danger', '照片上传失败', '照片被妖怪抓走啦', '再传一次吧']
-                # return render_template('show.html', user_info=user_info, status_message=status_message)
-                os.remove(old_file)
-                print('0字节图片：' + str(user_info))
-                flash(['！！！照片上传失败 ！！！', '>>> 请重新上传 <<<'], 'danger')
-                return render_template('heat.html', time_message=bjt_date_y + ' ' + bjt_time)
-            else:
-                tag = username + ' ' + bjt_date + cntime + ' ' + temperature + '℃'
-                new_file = scale_tag(old_file, new_path, 1024, tag)
+            tag = username + ' ' + bjt_date + cntime + ' ' + temperature + '℃'
+            new_file = scale_tag(old_file, new_path, 1024, tag)
 
-            file_url = '_uploads/' + new_file
-            print(user_info)
-            status_message = ['success', '上报成功', file_url, '']
-            return render_template('show.html', user_info=user_info, status_message=status_message)
+        file_url = '_uploads/' + new_file
+        print(user_info)
+        status_message = ['success', '上报成功', user_info, file_url]
+        session['status_message'] = status_message
+        return redirect(url_for('show_images'))
 
-
-    utc_t = datetime.utcnow().replace(tzinfo=timezone.utc)
-    bjt = utc_t.astimezone(timezone(timedelta(hours=8)))
-    bjt_date_y = bjt.strftime('%Y-%m-%d')
-    bjt_time = bjt.strftime('%H:%M%p')
     return render_template('heat.html', time_message=bjt_date_y + ' ' + bjt_time)
+
+@app.route('/show')
+def show_images():
+    return render_template('show.html')
 
 # 通过listx.html筛选csv、img文件用open.html打开，其他文件下载，目录进入
 @app.route('/listx/')
