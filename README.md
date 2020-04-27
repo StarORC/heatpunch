@@ -18,11 +18,12 @@ Upload thermometer photo,Register name and temperature, record in csv file
 │  ├─css/
 │  │  ├─bootstrap.min.css
 │  │  └─bootstrap.min.css.map
+│  ├─fonts/
+│  │  └─SourceHanSansSC-Medium.otf
 │  ├─js/
 │  │  ├─bootstrap.bundle.min.js
 │  │  └─bootstrap.bundle.min.js.map
-│  └─fonts/
-│     └─SourceHanSansSC-Medium.otf
+│  └─favicon.ico
 ├─templates/
 │  ├─base.html
 │  ├─heat.html
