@@ -1,15 +1,99 @@
 {% extends "base.html" %}
 
+{% block head %}
+<!-- <script type="text/javascript">
+	function check() {
+		if ($("form#userinfo")[0].reportValidity()) {
+			$("input#submit_btn").attr("disabled","disabled");
+			$("div.progress").show();
+			var oData = new FormData($("form#userinfo")[0]);
+			var oReq = new XMLHttpRequest();
+			oReq.open("POST", "/", true);
+			oReq.upload.onprogress = function(oEvent) {
+				if (oEvent.lengthComputable) {
+					var percentComplete = Math.round(oEvent.loaded / oEvent.total * 100);
+					$('.progress-bar').attr('aria-valuenow', percentComplete).css('width', percentComplete + '%');
+				}
+			};
+			oReq.send(oData);
+		}
+	}
+</script> -->
+<!-- <script type="text/javascript">
+	function check() {
+		if ($("form#userinfo")[0].reportValidity()) {
+			$("input#submit_btn").attr("disabled","disabled");
+			$("div.progress").show();
+			var oData = new FormData($("form#userinfo")[0]);
+			var oReq = new XMLHttpRequest();
+			console.log('UNSENT', oReq.readyState);
+			oReq.open("POST", "/", true);
+			console.log('OPENED', oReq.readyState);
+			oReq.upload.onprogress = function(oEvent) {
+				console.log('LOADING', oReq.readyState);
+				if (oEvent.lengthComputable) {
+					var percentComplete = Math.round(oEvent.loaded / oEvent.total * 100);
+					$('.progress-bar').attr('aria-valuenow', percentComplete).css('width', percentComplete + '%');
+				}
+			};
+			oReq.upload.onload = function(oReq) {
+				console.log('DONE', oReq.readyState);
+				console.log('load', oReq.status);
+				console.log(oReq.response);
+				console.log(oReq.responseText);
+				console.log(oReq.responseURL);
+				console.log('4 DONE', oReq.statusText);
+				console.log(oReq.responseText);
+				// if (oReq.status) {
+				// 	alert('loadend');
+				// 	console.log('load', oReq.status);
+				// window.location = "/show";
+				// }
+			};
+			oReq.send(oData);
+		}
+	}
+</script> -->
+<!-- <script type="text/javascript">
+	function check() {
+		if ($("form#userinfo")[0].reportValidity()) {
+			$("input#submit_btn").attr("disabled","disabled");
+			$("div.progress").show();
+			var oData = new FormData($("form#userinfo")[0]);
+			var oReq = new XMLHttpRequest();
+			oReq.upload.addEventListener("progress", updateProgress);
+			oReq.upload.addEventListener("loadend" , transferComplete(oReq));
+			oReq.open("POST", "/", true);
+			oReq.send(oData);
+		}
+	}
+	function updateProgress(oEvent) {
+		if (oEvent.lengthComputable) {
+			var percentComplete = Math.round(oEvent.loaded / oEvent.total * 100);
+			$('.progress-bar').attr('aria-valuenow', percentComplete).css('width', percentComplete + '%');
+		}
+	}
+	function transferComplete(tcEvent) {
+		if (tcEvent.status) {
+			alert('loadend');
+			console.log('load', tcvent.status);
+			window.location = "/show";
+		}
+	}
+</script> -->
+{% endblock %}
+
 {% block body %}
+<div id="main">
 	<div class="alert alert-primary progress-bar-striped text-center">
 		<h4>现在是北京时间</h4>
 		<h4><span class="badge badge-pill badge-primary">{{ time_message }}</span></h4>
 	</div>
 	<div class="container">
-		<form name="userinfo" method="post" enctype="multipart/form-data">
+		<form id="userinfo" name="userinfo" method="post" enctype="multipart/form-data">
 			<div class="form-group alert alert-warning">
 				<label>选择测温照片</label>
-				<input class="btn btn-outline-warning btn-block" id="file" type="file" name="photo" required>
+				<input class="btn btn-outline-warning btn-block" id="file" type="file" name="photo">
 			</div>
 			<div class="form-group">
 				<label for="username">姓名</label>
@@ -28,10 +112,9 @@
 				<input class="form-check-input" type="radio" name="time" id="pm" value="pm" required>
 				<label class="form-check-label" for="pm">下午</label>
 			</div>
-			<p><center><button class="btn btn-primary btn-lg" type="button"  data-toggle="modal" data-target="#notice">提交</button></center></p>
-
+			<p><center><input class="btn btn-primary btn-lg" type="button" data-toggle="modal" data-target="#notice" value="提交"></center></p>
 			<!-- Modal -->
-			<div class="modal fade" id="notice" tabindex="-1" role="dialog" data-backdrop="static" aria-labelledby="NoticeTitle" aria-hidden="true">
+			<div class="modal fade" id="notice" tabindex="-1" role="dialog" aria-labelledby="NoticeTitle" aria-hidden="true">
 			  <div class="modal-dialog" role="document">
 			    <div class="modal-content">
 			      <div class="modal-header">
@@ -47,16 +130,80 @@
 			        	<h4>3. 您的<b class="text-danger">上下午时间</b>是否选择正确？</h4>
 			        </p>
 			        <p>如需修改，请点击【返回修改】按钮。<br>如无误，请点击【提交】按钮。</p>
+					<div class="progress" style="height: 5px; display: none;">
+					  <div class="progress-bar" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+					</div>
 			      </div>
 			      <div class="modal-footer">
-			        <button type="button" class="btn btn-secondary" data-dismiss="modal">返回修改</button>
-			        <button type="submit" class="btn btn-primary" onclick="javascript:{this.disabled=true;document.userinfo.submit();}">提交</button>
+			        <input class="btn btn-secondary" type="button" data-dismiss="modal" value="返回修改">
+			        <input class="btn btn-primary" type="submit" id="submit_btn" value="提交">
+			        <!-- <input class="btn btn-primary" type="button" id="submit_btn" onclick="check()" value="提交"> -->
 			      </div>
 			    </div>
 			  </div>
 			</div>
 		</form>
 	</div>
+</div>
+<div id="show" style="display: none;">
+	<div class="alert alert-success progress-bar-striped text-center align-middle">
+		<p><h3 id="upload_status" class="text-success">upload_status</h3></p>
+		<p id="user_info"><b>username</b>，您<b class="text-danger">cntime</b>的体温是<b class="text-danger">num℃</b></p>
+	</div>
+	<div>
+		<p><center><a class="btn btn-primary btn-lg" href="/">再次填报</a></center></p>
+	</div>
+	<div id="result_photo" class="alert alert-success progress-bar-striped text-center">
+		<p>如果你能看到刚才上传的照片<br>就表明上报成功了，不用重复上报<br>蓝色标签上的信息正确吗？</p>
+		<img id="result_photo" class="img-fluid">
+	</div>
+</div>
+{% endblock %}
 
+{% block scripts %}
 
-	{% endblock %}
+<script type="text/javascript">
+	$('form').on('submit', function (event) {
+		$("input#submit_btn").attr("disabled","disabled");
+		$("div.progress").show();
+		event.preventDefault();
+		var oData = new FormData(this);
+		$.ajax({
+			xhr: function () {
+				var xhr = new XMLHttpRequest();
+				xhr.upload.addEventListener('progress', function (e) {
+					if (e.lengthComputable) {
+						var percent = Math.round(e.loaded * 100 / e.total);
+						$('.progress-bar').attr('aria-valuenow', percent).css('width', percent + '%');
+					}
+				});
+				return xhr;
+			},
+			type: 'POST',
+			url: '/',
+			cache: false,
+			data: oData,
+			processData: false,
+			contentType: false,
+			success: function (result) {
+				if (result.code=='is_photo' || result.code=='no_photo') {
+					$("#notice").modal("hide");
+					$(".flash, div#main").hide();
+					$("div#show").fadeIn();
+					var rsm = result.status_message;
+					$("h3#upload_status").html(rsm[1]);
+					$("p#user_info").html('<b>' + rsm[2][0] + '</b>，您<b class="text-danger">' + rsm[2][1] + '</b>的体温是<b class="text-danger">' + rsm[2][2] + '℃</b>');
+					if (result.code=='is_photo') {
+						$("img#result_photo").attr("src",rsm[3]);
+					} else if (result.code=='no_photo') {
+						$("div#result_photo").hide();
+					}
+				} else {
+					window.location = "/"
+				}
+			}
+		});
+	});
+</script>
+
+{% endblock %}

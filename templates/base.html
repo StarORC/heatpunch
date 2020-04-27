@@ -4,6 +4,7 @@
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 	<title>每日体温上报</title>
+    <link rel="shortcut icon" href="{{url_for('static', filename='favicon.ico')}}">
 	<!-- <link href="{{url_for('static', filename='css/bootstrap.min.css')}}" rel="stylesheet"> -->
 	<link href="https://cdn.bootcss.com/twitter-bootstrap/4.4.1/css/bootstrap.min.css" rel="stylesheet">
     {% block head %}
@@ -11,7 +12,7 @@
 </head>
 <body>
 {% for message in get_flashed_messages(with_categories=True) %}
-<div class="alert alert-{{ message[0] }} progress-bar-striped text-center">
+<div class="alert alert-{{ message[0] }} progress-bar-striped text-center flash">
     <b>{{ message[1][0] }}<br>{{ message[1][1] }}</b>
 </div>
 {% endfor %}
@@ -19,8 +20,11 @@
 {% block body %}
 {% endblock %}
 
-<script src="https://cdn.bootcss.com/jquery/3.4.1/jquery.slim.min.js"></script>
+<script src="https://cdn.bootcss.com/jquery/3.4.1/jquery.min.js"></script>
 <script src="https://cdn.bootcss.com/twitter-bootstrap/4.4.1/js/bootstrap.bundle.min.js"></script>
+
+{% block scripts %}
+{% endblock %}
 
 </body>
 </html>

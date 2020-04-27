@@ -11,7 +11,7 @@
 	</div>
 	<div class="alert alert-success progress-bar-striped text-center">
 		<p>如果你能看到刚才上传的照片<br>就表明上报成功了，不用重复上报<br>蓝色标签上的信息正确吗？</p>
-		<img src={{ session['status_message'][3] }} class="img-fluid">
+		<img src="{{ session['status_message'][3] }}" class="img-fluid">
 	</div>
 {% endif %}
 {% endblock %}
