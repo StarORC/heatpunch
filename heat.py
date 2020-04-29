@@ -175,19 +175,18 @@ def list_file():
         file_path = app.config['UPLOADED_PHOTOS_DEST'] + file
         if os.path.isfile(file_path):
             file_num += 1
+            file_url = file_path
             if file.split('.')[1] == 'csv':
                 url_filter = 'file_csv'
-                file_url = file_path
             elif file.split('.')[1] in IMAGES:
                 url_filter = 'file_img'
-                file_url = photos.url('') + file
             else:
                 url_filter = 'file_other'
-                file_url = photos.url('') + file
+                file_url = '/_uploads/' + file_path
         else:
             folder_num += 1
             url_filter = 'folder'
-            file_url = '/listx/' + file
+            file_url = file
         url_list.append([url_filter, file_url, file])
     url_list.sort(reverse = True)
     element_num = ['首页', folder_num, file_num]
@@ -202,21 +201,20 @@ def subpath_file(path_name):
     url_list = []
     for file in files_list:
         file_path = abs_path + '/' + file
+        file_url = file_path
         if os.path.isfile(file_path):
             file_num += 1
             if file.split('.')[1] == 'csv':
                 url_filter = 'file_csv'
-                file_url = file_path
             elif file.split('.')[1] in IMAGES:
                 url_filter = 'file_img'
-                file_url = photos.url(escape(path_name)) + '/' + file
             else:
                 url_filter = 'file_other'
-                file_url = photos.url(escape(path_name)) + '/' + file
+                file_url = '/_uploads/' + file_path
         else:
             folder_num += 1
             url_filter = 'folder'
-            file_url = '/listx/' + escape(path_name) + '/' + file
+            file_url = escape(path_name) + '/' + file
         url_list.append([url_filter, file_url, file])
     url_list.sort()
     element_num = [path_name, folder_num, file_num]
@@ -234,7 +232,7 @@ def open_file(file_path, url_filter):
                 dict_row.append(row)    
         file_content = [download_link, dict_row]
     else:
-        file_content = file_path
+        file_content = '/_uploads/' + file_path
     file = [url_filter, file_name, file_content]
     return render_template('open.html', file=file)
 
